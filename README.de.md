@@ -1,166 +1,170 @@
-# GitHub Repo Helper
+<h1 align="center">🛡️ GitHub Repo Helper</h1>
 
-Ein Satz von Bash-Skripten zur Verwaltung lokaler Projekte auf GitHub. Das Hauptziel ist **Datensicherung** — stelle sicher, dass jedes lokale Projekt auf GitHub gepusht wird, damit keine Daten verloren gehen, falls die Festplatte ausfällt.
+<p align="center">
+  <em>Bash-Skripte, die sicherstellen, dass jedes lokale Projekt wirklich auf GitHub gesichert ist — bevor deine Festplatte anders entscheidet.</em>
+</p>
 
-> **English version:** [README.md](README.md)
+<p align="center">
+  <img src="https://img.shields.io/badge/Bash-4EAA25?style=for-the-badge&logo=gnubash&logoColor=white" alt="Bash">
+  <img src="https://img.shields.io/badge/GitHub_CLI-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub CLI">
+  <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white" alt="Git">
+</p>
 
-## Voraussetzungen
+<p align="center">
+  <a href="README.md">🇬🇧 English version</a>
+</p>
 
-### 1. GitHub CLI installieren
+---
 
-Die Skripten benötigen die [GitHub CLI (`gh`)](https://cli.github.com/). Installation für deine Plattform:
+## 📖 Über das Projekt
 
-**macOS (Homebrew):**
+In einem Projektordner sammelt sich mit der Zeit Arbeit an, die es nie zu einem
+Remote geschafft hat. Manche Repositories wurden nie gepusht, manche haben
+uncommittete Änderungen von vor Monaten, und ein paar zeigen auf das falsche Konto.
 
-```bash
-brew install gh
-```
+Diese beiden Skripte finden das alles. `github-check.sh` scannt einen Projektordner
+und meldet den Zustand jedes einzelnen Projekts gegenüber deinem GitHub-Konto — und
+bietet an, Fehlendes zu pushen. `github-upload.sh` bringt ein einzelnes neues
+Projekt von `git init` bis zum ersten Push.
 
-**Linux (Debian/Ubuntu):**
+Es geht um Backup-Sicherheit, nicht um Repository-Verwaltung: Wenn die Platte
+ausfällt, soll nichts verloren sein.
 
-```bash
-sudo apt update
-sudo apt install gh
-```
+## 🛠️ Tech-Stack
 
-**Linux (Fedora):**
+| Technologie | Version | Zweck |
+|-------------|---------|-------|
+| <img src="https://img.shields.io/badge/Bash-4EAA25?style=flat-square&logo=gnubash&logoColor=white" alt="Bash"> Bash | 4.0+ | Assoziative Arrays werden benötigt |
+| <img src="https://img.shields.io/badge/Git-F05032?style=flat-square&logo=git&logoColor=white" alt="Git"> Git | — | Repository-Zustand |
+| <img src="https://img.shields.io/badge/GitHub_CLI-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub CLI"> GitHub CLI | — | Repositories auflisten, anlegen, pushen |
 
-```bash
-sudo dnf install gh
-```
+## ✨ Funktionen
 
-**Windows (winget):**
+- **Stapel-Prüfung** — ein kompletter Projektordner in einem Durchgang
+- **Vier klare Zustände** — aktuell, ungesichert, fehlend oder fremdes Konto
+- **Interaktiv** — pro Projekt entscheiden: pushen, überspringen oder abbrechen
+- **Fremde Remotes erkennen** — findet Repositories, die auf ein anderes Konto zeigen
+- **Geführter Upload** — Name, Sichtbarkeit, Init, Commit und Push in einem Ablauf
 
-```powershell
-winget install --id GitHub.cli
-```
+## 🚀 Erste Schritte
 
-Oder downloaden unter: https://cli.github.com/
+### Voraussetzungen
 
-### 2. Bei GitHub anmelden
+- **Bash 4.0+** — wegen assoziativer Arrays
+- **Git**
+- **GitHub CLI (`gh`)**, authentifiziert
 
-Melde dich mit der CLI bei deinem GitHub-Konto an:
+### GitHub CLI installieren
+
+| Plattform | Befehl |
+|-----------|--------|
+| macOS | `brew install gh` |
+| Debian / Ubuntu | `sudo apt update && sudo apt install gh` |
+| Fedora | `sudo dnf install gh` |
+| Windows | `winget install --id GitHub.cli` |
+
+Oder herunterladen von [cli.github.com](https://cli.github.com/).
+
+### Authentifizierung
 
 ```bash
 gh auth login
 ```
 
-Folge den interaktiven Anweisungen, um deine bevorzugte Authentifizierungsmethode zu wählen (Browser oder Token).
-
-### 3. Personal Access Token (PAT) — Benötigte Berechtigungen
-
-Falls du stattdessen ein Personal Access Token verwenden möchtest, erstelle eines unter https://github.com/settings/tokens mit den folgenden Berechtigungen:
-
-| Scope | Erforderlich | Zweck |
-|-------|-------------|-------|
-| `repo` | **Ja** | Volle Kontrolle über private Repositories — Erstellen, Pushen, Auflöschen und Löschen von Repos |
-| `delete_repo` | Optional | Nur benötigt, wenn `github-upload.sh` bestehende Repos überschreiben soll |
-
-Token setzen via:
+Oder mit einem Token:
 
 ```bash
 gh auth login --with-token <<< "ghp_dein_token_hier"
 ```
 
-Oder als Umgebungsvariable setzen:
+Oder als Umgebungsvariable:
 
 ```bash
 export GH_TOKEN="ghp_dein_token_hier"
 ```
 
-### 4. Anforderungen
+### Token-Berechtigungen
 
-- **Bash 4.0+** (für assoziative Arrays)
-- **Git**
-- **GitHub CLI (`gh`)** — authentifiziert
+| Scope | Nötig | Wofür |
+|-------|-------|-------|
+| `repo` | **Ja** | Private Repositories anlegen, pushen, auflisten und lesen |
+| `delete_repo` | Optional | Nur, wenn `github-upload.sh` ein bestehendes Repository überschreiben soll |
 
----
+### Installation
 
-## Skripten
+```bash
+git clone https://github.com/cooolinho/github-repo-helper.git
+cd github-repo-helper
+chmod +x *.sh
+```
 
-### `github-check.sh` — Stapel-Prüfung aller Projekte
+## 📋 Verwendung
 
-Durchsucht einen Ordner mit Projekt-Unterordnern und prüft jedes einzelne gegen dein GitHub-Konto. Berichtet, welche Projekte auf GitHub liegen, welche uncommittete/unpushed Änderungen haben und welche fehlen.
+### 🔍 `github-check.sh` — Projektordner prüfen
 
-#### Nutzung
+Scannt die Unterordner eines Projektordners und gleicht jeden mit deinem
+GitHub-Konto ab.
 
 ```bash
 ./github-check.sh [ORDNER] [--account OWNER]
 ```
 
-| Argument | Erforderlich | Beschreibung |
-|----------|-------------|--------------|
-| `ORDNER` | Nein | Verzeichnis mit Projekt-Unterordnern (Standard: aktuelles Verzeichnis) |
-| `--account OWNER` | Nein | GitHub-Kontoname überschreiben (Standard: automatisch erkannt aus `gh auth`) |
-
-#### Beispiele
-
-**Alle Projekte im aktuellen Verzeichnis prüfen:**
+| Argument | Nötig | Beschreibung |
+|----------|-------|--------------|
+| `ORDNER` | Nein | Verzeichnis mit den Projekten (Standard: aktuelles Verzeichnis) |
+| `--account OWNER` | Nein | GitHub-Benutzername überschreiben (Standard: aus `gh auth`) |
 
 ```bash
-./github-check.sh
+./github-check.sh                                # aktuelles Verzeichnis
+./github-check.sh ~/projekte                     # bestimmter Ordner
+./github-check.sh ~/projekte --account mein-user # bestimmtes Konto
 ```
 
-**Alle Projekte in einem bestimmten Ordner prüfen:**
-
-```bash
-./github-check.sh ~/projects
-```
-
-**Gegen ein bestimmtes GitHub-Konto prüfen:**
-
-```bash
-./github-check.sh ~/projects --account mein-benutzername
-```
-
-#### Status-Ausgaben
+#### Zustände
 
 | Status | Bedeutung |
 |--------|-----------|
-| `[OK]` | Projekt liegt auf GitHub und ist aktuell |
-| `[WARN]` | Projekt liegt auf GitHub, hat aber uncommittete Dateien oder unpushed Commits |
-| `[MISSING]` | Projekt liegt nicht auf GitHub (interaktive Aufforderung zum Pushen oder Überspringen) |
-| `[FREMD]` | Remote zeigt auf ein anderes GitHub-Konto (fremd) |
+| `[OK]` | Auf GitHub und aktuell |
+| `[WARN]` | Auf GitHub, aber mit uncommitteten Dateien oder ungepushten Commits |
+| `[MISSING]` | Nicht auf GitHub — du wirst gefragt, ob gepusht werden soll |
+| `[FREMD]` | Das Remote zeigt auf ein anderes GitHub-Konto |
 
-#### Interaktive Aufforderungen
+#### Abfragen
 
-Für jedes `[MISSING]`-Projekt wirst du gefragt:
+Bei jedem `[MISSING]`-Projekt:
 
-- **[P]ushen** — Repository auf GitHub anlegen und pushen
-- **[S]kip** — Projekt überspringen
-- **[Q]uit** — Prüfung abbrechen
+- **[P]ush** — Repository anlegen und pushen
+- **[S]kip** — überspringen
+- **[Q]uit** — Prüfung beenden
 
----
+### ⬆️ `github-upload.sh` — einzelnes Projekt hochladen
 
-### `github-upload.sh` — Einzelnes Projekt hochladen
-
-Ein einfaches Skript zum Initialisieren von Git und Hochladen eines neuen Projekts auf GitHub. Funktioniert nur mit Verzeichnissen, die **noch kein** Git-Repository sind.
-
-#### Nutzung
+Initialisiert Git und pusht ein neues Projekt. Funktioniert nur bei Verzeichnissen,
+die **noch kein** Git-Repository sind.
 
 ```bash
 ./github-upload.sh /pfad/zum/projekt
 ```
 
-#### Beispiele
+Das Skript wird:
 
-**Ein neues Projekt hochladen:**
+1. nach einem Repository-Namen fragen, standardmäßig der Verzeichnisname
+2. fragen, ob es öffentlich oder privat sein soll
+3. `git init` ausführen und einen ersten Commit anlegen
+4. das GitHub-Repository anlegen und pushen
 
-```bash
-./github-upload.sh ~/projects/meine-neue-app
+> ⚠️ Existiert bereits ein Repository mit diesem Namen, wirst du um Bestätigung
+> gebeten, bevor es **gelöscht und neu angelegt** wird. Das ist der einzige
+> destruktive Pfad im Toolset — lies die Abfrage aufmerksam.
+
+## 📁 Projektstruktur
+
+```
+github-repo-helper/
+├── github-check.sh    # Stapel-Prüfung für einen Projektordner
+└── github-upload.sh   # Einzelnes Projekt hochladen
 ```
 
-Das Skript:
+## 📄 Lizenz
 
-1. Fragt nach einem Repository-Namen (Standard: Verzeichnisname)
-2. Fragt, ob das Repository public oder private sein soll
-3. Initialisiert Git, erstellt einen Initial-Commit
-4. Erstellt das GitHub-Repository und pusht
-
-> **Hinweis:** Falls ein Repository mit demselben Namen bereits auf GitHub existiert, wirst du nach einer Bestätigung gefragt, bevor es gelöscht und neu erstellt wird.
-
----
-
-## Lizenz
-
-MIT
+Veröffentlicht unter der [MIT-Lizenz](LICENSE).
